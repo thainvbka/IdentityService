@@ -6,7 +6,8 @@ public enum ErrorCode {
     USER_NOT_FOUND(1002, "User not found"),
     UNCATEGORIZED(9999, "Uncategorized error"),
     USERNAME_VALIDATION_FAILED(1003, "Username validation failed"),
-    PASSWORD_VALIDATION_FAILED(1003, "Password validation failed")
+    PASSWORD_VALIDATION_FAILED(1004, "Password validation failed"),
+    UNAUTHENTICATED(1006, "Unauthenticated error"),
     ;
     private int code;
     private String message;
