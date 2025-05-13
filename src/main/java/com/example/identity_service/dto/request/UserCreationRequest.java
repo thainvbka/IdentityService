@@ -14,9 +14,7 @@ import java.time.LocalDate;
 @Builder
 public class UserCreationRequest {
     @Size(min = 3, message = "USERNAME_VALIDATION_FAILED")
-    @NotBlank(message = "username must be not null")
     String username;
-
     @Size(min = 8, message = "PASSWORD_VALIDATION_FAILED")
     String password;
     String firstName;

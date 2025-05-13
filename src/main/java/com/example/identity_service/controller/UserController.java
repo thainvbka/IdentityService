@@ -9,6 +9,7 @@ import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -30,7 +31,16 @@ public class UserController {
 
     @GetMapping
     List<UserResponse> getUsers() {
+        //lay thong tin cua user dang dang nhap
+        var authentication = SecurityContextHolder.getContext().getAuthentication();
        return userService.getUsers();
+    }
+
+    @GetMapping("/myInfo")
+    ApiResponse<UserResponse> getMyInfo() {
+        return ApiResponse.<UserResponse>builder()
+                .result(userService.getMyInfo())
+                .build();
     }
 
     @GetMapping("/{userId}")

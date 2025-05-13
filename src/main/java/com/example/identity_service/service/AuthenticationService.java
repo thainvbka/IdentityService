@@ -4,6 +4,7 @@ import com.example.identity_service.dto.request.AuthenticationRequest;
 import com.example.identity_service.dto.request.IntrospectRequest;
 import com.example.identity_service.dto.response.AuthenticationResponse;
 import com.example.identity_service.dto.response.IntrospectResponse;
+import com.example.identity_service.entity.User;
 import com.example.identity_service.exception.AppException;
 import com.example.identity_service.exception.ErrorCode;
 import com.example.identity_service.repository.UserRepository;
@@ -20,14 +21,17 @@ import lombok.experimental.FieldDefaults;
 import lombok.experimental.NonFinal;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import java.text.ParseException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
+import java.util.StringJoiner;
 
 @Slf4j
 @Service
@@ -65,7 +69,7 @@ public class AuthenticationService{
         if(!authenticated){
             throw new AppException(ErrorCode.UNAUTHENTICATED);
         }
-        var token = generateToken(authenticationRequest.getUsername());
+        var token = generateToken(user);
 
         return AuthenticationResponse.builder()
                 .token(token)
@@ -73,16 +77,16 @@ public class AuthenticationService{
                 .build();
 
     }
-    private String generateToken(String username){
+    private String generateToken(User user){
         JWSHeader header = new JWSHeader(JWSAlgorithm.HS512);
 
         //cac claim phan payload
         JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
-                .subject(username) // xác định "ai là chủ nhân của token này",Thường chứa userId, username, hoặc email
+                .subject(user.getUsername()) // xác định "ai là chủ nhân của token này",Thường chứa userId, username, hoặc email
                 .issuer("example.com") //xác định token được phát hành từ hệ thống nào
                 .issueTime(new Date()) // Thời điểm token được phát hành
                 .expirationTime(new Date(Instant.now().plus(1, ChronoUnit.HOURS).toEpochMilli())) //xac dinh thoi gian ton tai
-                .claim("customClaim", "Custom Claim")
+                .claim("scope", buildScope(user))
                 .build();
 
         Payload payload = new Payload(claimsSet.toJSONObject());
@@ -97,4 +101,13 @@ public class AuthenticationService{
             throw new RuntimeException(e);
         }
     }
+
+    private String buildScope(User user){
+        StringJoiner joiner = new StringJoiner(" ");
+            if(!CollectionUtils.isEmpty(user.getRoles())){
+                user.getRoles().forEach(s -> joiner.add(s));
+            }
+            return joiner.toString();
+    }
+
 }
